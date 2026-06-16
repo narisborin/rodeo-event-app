@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rodeo Event Action Plan Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Rodeo Tex Mex</h1>
+      <p>Event Action Plan Generator</p>
+    </div>
+    <button id="newEventBtn">+ New Event</button>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <h2>Saved Events</h2>
+      <div id="eventList" class="event-list"></div>
+    </aside>
+
+    <section class="main-panel">
+      <div class="steps">
+        <button class="step active" data-step="1">1. Event Info</button>
+        <button class="step" data-step="2">2. Questionnaire</button>
+        <button class="step" data-step="3">3. Action Plan</button>
+      </div>
+
+      <section id="step1" class="card step-panel active">
+        <h2>Event Information</h2>
+        <div class="grid">
+          <label>Event Name<input id="eventName" placeholder="e.g. STA Welcome Staff Party" /></label>
+          <label>Client / Company<input id="clientName" placeholder="e.g. St. Andrews International School" /></label>
+          <label>Event Type<select id="eventType">
+            <option value="Corporate Event">Corporate Event</option>
+            <option value="Birthday Party">Birthday Party</option>
+            <option value="Networking Event">Networking Event</option>
+            <option value="Wedding Event">Wedding Event</option>
+            <option value="School Event">School Event</option>
+            <option value="Staff Party">Staff Party</option>
+            <option value="Product Launch">Product Launch</option>
+            <option value="Private Dining">Private Dining</option>
+            <option value="Custom Event">Custom Event</option>
+          </select></label>
+          <label>Date<input id="eventDate" type="date" /></label>
+          <label>Start Time<input id="startTime" type="time" value="18:00" /></label>
+          <label>End Time<input id="endTime" type="time" value="00:00" /></label>
+          <label>Guest Count<input id="guestCount" type="number" min="1" value="50" /></label>
+          <label>Contact Name<input id="contactName" placeholder="Client contact name" /></label>
+          <label>Contact Email<input id="contactEmail" type="email" placeholder="Client contact email" /></label>
+          <label>Contact Phone Number<input id="contactPhone" placeholder="Client contact phone" /></label>
+          <label>Event Lead<select id="eventLead">
+            <option value="Name 1">Name 1</option>
+            <option value="Name 2">Name 2</option>
+            <option value="Name 3">Name 3</option>
+            <option value="Name 4">Name 4</option>
+          </select></label>
+        </div>
+        <div class="actions">
+          <button onclick="saveEvent()">Save Event Info</button>
+          <button onclick="goToStep(2)">Next: Questionnaire</button>
+        </div>
+      </section>
+
+      <section id="step2" class="card step-panel">
+        <h2>Dynamic Event Questionnaire</h2>
+        <p class="hint">Select the modules that apply. The action plan changes based on your choices.</p>
+        <div class="module-grid">
+          <label><input type="checkbox" id="modTickets" /> Drink Tickets + Wristbands</label>
+          <label><input type="checkbox" id="modBuffet" /> Buffet</label>
+          <label><input type="checkbox" id="modFreeFlow" /> Free Flow Drinks</label>
+          <label><input type="checkbox" id="modCanapes" /> Pass-around Canapés</label>
+          <label><input type="checkbox" id="modRegistration" /> Registration Desk</label>
+          <label><input type="checkbox" id="modDJ" /> DJ / Entertainment</label>
+        </div>
+
+        <div id="ticketQuestions" class="question-block hidden">
+          <h3>Drink Tickets + Wristbands</h3>
+          <div class="grid">
+            <label>Tickets per guest<input id="ticketsPerGuest" type="number" value="5" /></label>
+            <label>Spare tickets<input id="spareTickets" type="number" value="50" /></label>
+            <label>Spare wristbands<input id="spareWristbands" type="number" value="20" /></label>
+            <label>Ticket notes<input id="ticketNotes" placeholder="e.g. 1 coupon per drink" /></label>
+          </div>
+        </div>
+
+        <div id="buffetQuestions" class="question-block hidden">
+          <h3>Buffet</h3>
+          <div class="grid">
+            <label>Buffet menu<textarea id="buffetMenu" placeholder="Paste or write buffet menu"></textarea></label>
+            <label>Buffet station location<input id="buffetLocation" placeholder="e.g. upstairs / outdoor area" /></label>
+            <label>Buffet start time<input id="buffetStart" type="time" value="19:00" /></label>
+            <label>Buffet end time<input id="buffetEnd" type="time" value="22:00" /></label>
+          </div>
+        </div>
+
+        <div id="freeFlowQuestions" class="question-block hidden">
+          <h3>Free Flow Drinks</h3>
+          <div class="grid">
+            <label>Free flow duration<input id="freeFlowDuration" placeholder="e.g. 4 hours" /></label>
+            <div class="full-width">
+              <label>Included beverages</label>
+              <div id="freeFlowDrinks" class="checkbox-list">
+                <label><input type="checkbox" value="Asahi Draft" /> Asahi Draft</label>
+                <label><input type="checkbox" value="Budweiser Draft" /> Budweiser Draft</label>
+                <label><input type="checkbox" value="Corona" /> Corona</label>
+                <label><input type="checkbox" value="Red Wine" /> Red Wine</label>
+                <label><input type="checkbox" value="White Wine" /> White Wine</label>
+                <label><input type="checkbox" value="Gin & Tonic" /> Gin & Tonic</label>
+                <label><input type="checkbox" value="Vodka Soda" /> Vodka Soda</label>
+                <label><input type="checkbox" value="Whiskey Soda" /> Whiskey Soda</label>
+                <label><input type="checkbox" value="Margarita" /> Margarita</label>
+                <label><input type="checkbox" value="Sangria" /> Sangria</label>
+                <label><input type="checkbox" value="Coke" /> Coke</label>
+                <label><input type="checkbox" value="Coke Zero" /> Coke Zero</label>
+                <label><input type="checkbox" value="Sprite" /> Sprite</label>
+                <label><input type="checkbox" value="Soda Water" /> Soda Water</label>
+                <label><input type="checkbox" value="Tonic Water" /> Tonic Water</label>
+                <label><input type="checkbox" value="Orange Juice" /> Orange Juice</label>
+                <label><input type="checkbox" value="Pineapple Juice" /> Pineapple Juice</label>
+                <label><input type="checkbox" value="Water" /> Water</label>
+              </div>
+            </div>
+            <label>Last call time<input id="lastCall" type="time" /></label>
+          </div>
+        </div>
+
+        <div id="canapeQuestions" class="question-block hidden">
+          <h3>Canapés</h3>
+          <div class="grid">
+            <label>Number of rounds<input id="canapeRounds" type="number" value="3" /></label>
+            <label>Canapé menu<textarea id="canapeMenu" placeholder="Pork Carnitas Flautas, Mac & Cheese Fritters..."></textarea></label>
+            <div class="full-width">
+              <label>Round times</label>
+              <div id="canapeRoundTimes" class="round-time-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="commercialQuestions" class="question-block">
+          <h3>Commercial Summary</h3>
+          <div class="grid">
+            <label>Package price per person<input id="pricePerPerson" type="number" value="0" /></label>
+            <label>Minimum spend<input id="minimumSpend" type="number" value="0" /></label>
+            <label>Payment terms<input id="paymentTerms" placeholder="e.g. 100% pre-paid by event date" /></label>
+            <label>Additional services / charges<textarea id="additionalCharges" placeholder="DJ, voucher, decorations, etc."></textarea></label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button onclick="saveEvent()">Save Questionnaire</button>
+          <button onclick="generatePlan(); goToStep(3)">Generate Action Plan</button>
+        </div>
+      </section>
+
+      <section id="step3" class="card step-panel">
+        <div class="plan-header no-print">
+          <h2>Generated Action Plan</h2>
+          <div>
+            <button onclick="generatePlan()">Regenerate</button>
+            <button onclick="savePlanEdits()">Save Edits</button>
+            <button onclick="savePlanEdits(); window.print()">Export / Print PDF</button>
+          </div>
+        </div>
+        <p class="hint no-print">You can click directly into the action plan below and edit any wording, numbers, timeline items, or notes before exporting.</p>
+        <div id="actionPlan" contenteditable="true" class="action-plan"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
