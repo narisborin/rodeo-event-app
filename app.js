@@ -39,6 +39,16 @@ function setCheckedBeverages(values = []){
   });
 }
 
+function getCheckedBuffetItems(){
+  return Array.from(document.querySelectorAll('#buffetMenu input[type="checkbox"]:checked')).map(input => input.value);
+}
+
+function setCheckedBuffetItems(values = []){
+  document.querySelectorAll('#buffetMenu input[type="checkbox"]').forEach(input => {
+    input.checked = values.includes(input.value);
+  });
+}
+
 function renderCanapeRoundInputs(existingTimes = []){
   const count = Math.max(0, Number($('canapeRounds').value || 0));
   const container = $('canapeRoundTimes');
@@ -64,12 +74,13 @@ function defaultRoundTime(round){
 }
 
 function readForm(){
-  const ids = ['eventName','clientName','eventType','eventDate','startTime','endTime','guestCount','contactName','contactEmail','contactPhone','eventLead','ticketsPerGuest','spareTickets','spareWristbands','ticketNotes','buffetMenu','buffetLocation','buffetStart','buffetEnd','freeFlowDuration','lastCall','canapeRounds','canapeMenu','pricePerPerson','minimumSpend','paymentTerms','additionalCharges'];
+  const ids = ['eventName','clientName','eventType','eventDate','startTime','endTime','guestCount','contactName','contactEmail','contactPhone','eventLead','ticketsPerGuest','spareTickets','spareWristbands','ticketNotes','buffetLocation','buffetStart','buffetEnd','freeFlowDuration','lastCall','canapeRounds','canapeMenu','pricePerPerson','minimumSpend','paymentTerms','additionalCharges'];
   const data = {};
   ids.forEach(id => data[id] = $(id).value);
   ['modTickets','modBuffet','modFreeFlow','modCanapes','modRegistration','modDJ'].forEach(id => data[id] = $(id).checked);
   data.canapeRoundTimes = getRoundTimes();
   data.freeFlowDrinks = getCheckedBeverages();
+  data.buffetMenu = getCheckedBuffetItems();
   data.planHtml = $('actionPlan').innerHTML;
   return data;
 }
@@ -80,6 +91,7 @@ function fillForm(data){
     if(el.type === 'checkbox') el.checked = !!v; else el.value = v ?? '';
   });
   setCheckedBeverages(data.freeFlowDrinks || []);
+  setCheckedBuffetItems(data.buffetMenu || []);
   modules.forEach(([check, block]) => $(block).classList.toggle('hidden', !$(check).checked));
   renderCanapeRoundInputs(data.canapeRoundTimes || []);
   $('actionPlan').innerHTML = data.planHtml || '';
@@ -214,7 +226,7 @@ function generatePlan(){
 
   <h2>3. Food & Beverage</h2>`;
 
-  if(d.modBuffet) html += `<h3>Buffet</h3><p><strong>Location:</strong> ${d.buffetLocation || '-'}</p><ul>${nl(d.buffetMenu)}</ul>`;
+  if(d.modBuffet) html += `<h3>Buffet</h3><p><strong>Location:</strong> ${d.buffetLocation || '-'}</p><ul>${(d.buffetMenu || []).map(x=>`<li>${x}</li>`).join('') || '<li>-</li>'}</ul>`;
   if(d.modFreeFlow) html += `<h3>Free Flow Drinks</h3><p><strong>Duration:</strong> ${d.freeFlowDuration || '-'}</p><ul>${(d.freeFlowDrinks || []).map(x=>`<li>${x}</li>`).join('') || '<li>-</li>'}</ul>`;
   if(d.modCanapes) html += `<h3>Canapés</h3><p><strong>Rounds:</strong> ${d.canapeRounds || '-'}</p><ul>${nl(d.canapeMenu)}</ul>`;
   if(d.modTickets) html += `<h3>Drink Ticket + Wristband System</h3>
@@ -240,7 +252,15 @@ function generatePlan(){
     <li>Bar Lead: TBC</li>
   </ul>
 
-  <h2>7. Special Notes</h2><p>Add client requests, VIP guests, weather concerns or other notes here.</p>`;
+  <h2>7. Special Notes</h2><p>Add client requests, VIP guests, weather concerns or other notes here.</p>
+
+  <h2>8. Approval & Sign-Off</h2>
+  <table>
+    <tr><th>Prepared By</th><td></td></tr>
+    <tr><th>Reviewed / Approved By</th><td></td></tr>
+    <tr><th>Signature</th><td style="height:60px;"></td></tr>
+    <tr><th>Date</th><td></td></tr>
+  </table>`;
 
   $('actionPlan').innerHTML = html;
   savePlanEdits();
