@@ -15,6 +15,7 @@ modules.forEach(([check, block]) => {
 $('newEventBtn').addEventListener('click', newEvent);
 document.querySelectorAll('.step').forEach(btn => btn.addEventListener('click', () => goToStep(btn.dataset.step)));
 $('canapeRounds').addEventListener('input', () => renderCanapeRoundInputs());
+$('foodServiceStyle').addEventListener('change', syncFoodServiceStyle);
 
 function goToStep(step){
   document.querySelectorAll('.step').forEach(b => b.classList.toggle('active', b.dataset.step == step));
@@ -49,6 +50,26 @@ function setCheckedBuffetItems(values = []){
   });
 }
 
+function syncFoodServiceStyle(){
+  const style = $('foodServiceStyle').value;
+  const isBuffet = style === 'Buffet';
+  const isCanapes = style === 'Canapés / Finger Food';
+  const isALaCarte = style === 'À La Carte (Standard Menu)';
+
+  $('modBuffet').checked = isBuffet;
+  $('modCanapes').checked = isCanapes;
+  $('buffetQuestions').classList.toggle('hidden', !isBuffet);
+  $('canapeQuestions').classList.toggle('hidden', !isCanapes);
+  $('aLaCarteQuestions').classList.toggle('hidden', !isALaCarte);
+}
+
+function inferFoodServiceStyle(d){
+  if(d.foodServiceStyle) return d.foodServiceStyle;
+  if(d.modBuffet) return 'Buffet';
+  if(d.modCanapes) return 'Canapés / Finger Food';
+  return '-';
+}
+
 function renderCanapeRoundInputs(existingTimes = []){
   const count = Math.max(0, Number($('canapeRounds').value || 0));
   const container = $('canapeRoundTimes');
@@ -74,7 +95,7 @@ function defaultRoundTime(round){
 }
 
 function readForm(){
-  const ids = ['eventName','clientName','eventType','eventDate','startTime','endTime','guestCount','contactName','contactEmail','contactPhone','eventLead','ticketsPerGuest','spareTickets','spareWristbands','ticketNotes','buffetLocation','buffetStart','buffetEnd','freeFlowDuration','lastCall','canapeRounds','canapeMenu','pricePerPerson','minimumSpend','paymentTerms','additionalCharges'];
+  const ids = ['eventName','clientName','eventType','eventDate','startTime','endTime','guestCount','contactName','contactEmail','contactPhone','eventLead','foodServiceStyle','ticketsPerGuest','spareTickets','spareWristbands','ticketNotes','buffetLocation','buffetStart','buffetEnd','freeFlowDuration','lastCall','canapeRounds','canapeMenu','aLaCartePayment','aLaCarteBudgetCap','aLaCarteLimitedMenu','aLaCarteNotes','pricePerPerson','minimumSpend','paymentTerms','additionalCharges'];
   const data = {};
   ids.forEach(id => data[id] = $(id).value);
   ['modTickets','modBuffet','modFreeFlow','modCanapes','modRegistration','modDJ'].forEach(id => data[id] = $(id).checked);
@@ -93,6 +114,7 @@ function fillForm(data){
   setCheckedBeverages(data.freeFlowDrinks || []);
   setCheckedBuffetItems(data.buffetMenu || []);
   modules.forEach(([check, block]) => $(block).classList.toggle('hidden', !$(check).checked));
+  syncFoodServiceStyle();
   renderCanapeRoundInputs(data.canapeRoundTimes || []);
   $('actionPlan').innerHTML = data.planHtml || '';
 }
@@ -105,6 +127,9 @@ function newEvent(){
   });
   $('eventType').value = 'Corporate Event';
   $('eventLead').value = 'Name 1';
+  $('foodServiceStyle').value = '';
+  $('aLaCartePayment').value = 'Guests pay individually';
+  $('aLaCarteLimitedMenu').value = 'No';
   $('guestCount').value = 50;
   $('startTime').value = '18:00';
   $('endTime').value = '00:00';
@@ -115,6 +140,7 @@ function newEvent(){
   renderCanapeRoundInputs(['19:00','20:00','21:00']);
   $('actionPlan').innerHTML = '';
   modules.forEach(([c,b]) => $(b).classList.add('hidden'));
+  $('aLaCarteQuestions').classList.add('hidden');
   goToStep(1);
 }
 
@@ -179,6 +205,12 @@ function generatePlan(){
   const totalTickets = ticketTotal + Number(d.spareTickets || 0);
   const totalWristbands = guests + Number(d.spareWristbands || 0);
   const packageTotal = guests * price;
+  const aLaCarteBudgetCap = Number(d.aLaCarteBudgetCap || 0);
+  const commercialSubtotal = Math.max(packageTotal, minSpend, aLaCarteBudgetCap);
+  const serviceCharge = commercialSubtotal * 0.10;
+  const subtotalAfterService = commercialSubtotal + serviceCharge;
+  const vat = subtotalAfterService * 0.07;
+  const grandTotal = subtotalAfterService + vat;
 
   let operationalSuggestions = [];
   if(guests >= 150) operationalSuggestions.push('High guest count: assign additional service staff and registration support.');
@@ -206,6 +238,7 @@ function generatePlan(){
   <table>
     <tr><th>Client</th><td>${d.clientName || '-'}</td></tr>
     <tr><th>Event Type</th><td>${d.eventType}</td></tr>
+    <tr><th>Food Service Style</th><td>${inferFoodServiceStyle(d)}</td></tr>
     <tr><th>Date</th><td>${d.eventDate || '-'}</td></tr>
     <tr><th>Time</th><td>${d.startTime || '-'} - ${d.endTime || '-'}</td></tr>
     <tr><th>Guests</th><td>${guests || '-'}</td></tr>
@@ -215,18 +248,35 @@ function generatePlan(){
     <tr><th>Event Lead</th><td>${d.eventLead || '-'}</td></tr>
   </table>
 
-  <h2>2. Commercial Summary</h2>
+  <h2>2. Commercial Arrangement</h2>
   <table>
     <tr><th>Package Price / Person</th><td>THB ${price.toLocaleString()}</td></tr>
     <tr><th>Package Total</th><td>THB ${packageTotal.toLocaleString()}</td></tr>
-    <tr><th>Minimum Spend</th><td>THB ${minSpend.toLocaleString()}</td></tr>
+    <tr><th>Minimum / Guaranteed Spend</th><td>THB ${minSpend.toLocaleString()}</td></tr>
+    ${aLaCarteBudgetCap ? `<tr><th>À La Carte Budget Cap / Hosted Tab</th><td>THB ${aLaCarteBudgetCap.toLocaleString()}</td></tr>` : ''}
+    <tr><th>Subtotal Before Service Charge & VAT</th><td>THB ${commercialSubtotal.toLocaleString(undefined, {maximumFractionDigits: 2})}</td></tr>
+    <tr><th>Service Charge 10%</th><td>THB ${serviceCharge.toLocaleString(undefined, {maximumFractionDigits: 2})}</td></tr>
+    <tr><th>Subtotal After Service Charge</th><td>THB ${subtotalAfterService.toLocaleString(undefined, {maximumFractionDigits: 2})}</td></tr>
+    <tr><th>VAT 7%</th><td>THB ${vat.toLocaleString(undefined, {maximumFractionDigits: 2})}</td></tr>
+    <tr><th>Grand Total</th><td><strong>THB ${grandTotal.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong></td></tr>
     <tr><th>Payment Terms</th><td>${d.paymentTerms || '-'}</td></tr>
   </table>
   <p><strong>Additional charges/services:</strong> ${d.additionalCharges || '-'}</p>
 
   <h2>3. Food & Beverage</h2>`;
 
+  html += `<p><strong>Food Service Style:</strong> ${inferFoodServiceStyle(d)}</p>`;
   if(d.modBuffet) html += `<h3>Buffet</h3><p><strong>Location:</strong> ${d.buffetLocation || '-'}</p><ul>${(d.buffetMenu || []).map(x=>`<li>${x}</li>`).join('') || '<li>-</li>'}</ul>`;
+  if(d.foodServiceStyle === 'À La Carte (Standard Menu)') html += `<h3>À La Carte / Standard Menu</h3>
+    <table>
+      <tr><th>Payment Structure</th><td>${d.aLaCartePayment || '-'}</td></tr>
+      <tr><th>Budget Cap / Hosted Tab</th><td>THB ${aLaCarteBudgetCap.toLocaleString()}</td></tr>
+      <tr><th>Limited Event Menu Required?</th><td>${d.aLaCarteLimitedMenu || '-'}</td></tr>
+    </table>
+    <p><strong>Notes:</strong> ${d.aLaCarteNotes || 'Guests will order from the standard Rodeo menu.'}</p>`;
+  if(d.foodServiceStyle === 'Set Menu') html += `<h3>Set Menu</h3><p>Set menu details to be added manually.</p>`;
+  if(d.foodServiceStyle === 'Sharing Style') html += `<h3>Sharing Style</h3><p>Sharing menu details to be added manually.</p>`;
+  if(d.foodServiceStyle === 'No Food') html += `<h3>No Food</h3><p>No food service required for this event.</p>`;
   if(d.modFreeFlow) html += `<h3>Free Flow Drinks</h3><p><strong>Duration:</strong> ${d.freeFlowDuration || '-'}</p><ul>${(d.freeFlowDrinks || []).map(x=>`<li>${x}</li>`).join('') || '<li>-</li>'}</ul>`;
   if(d.modCanapes) html += `<h3>Canapés</h3><p><strong>Rounds:</strong> ${d.canapeRounds || '-'}</p><ul>${nl(d.canapeMenu)}</ul>`;
   if(d.modTickets) html += `<h3>Drink Ticket + Wristband System</h3>

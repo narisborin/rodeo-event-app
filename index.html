@@ -67,6 +67,20 @@
       <section id="step2" class="card step-panel">
         <h2>Dynamic Event Questionnaire</h2>
         <p class="hint">Select the modules that apply. The action plan changes based on your choices.</p>
+        <div class="question-block compact-block">
+          <h3>Food Service Style</h3>
+          <div class="grid">
+            <label>Food service style<select id="foodServiceStyle">
+              <option value="">Select food service style</option>
+              <option value="Buffet">Buffet</option>
+              <option value="Canapés / Finger Food">Canapés / Finger Food</option>
+              <option value="Set Menu">Set Menu</option>
+              <option value="Sharing Style">Sharing Style</option>
+              <option value="À La Carte (Standard Menu)">À La Carte (Standard Menu)</option>
+              <option value="No Food">No Food</option>
+            </select></label>
+          </div>
+        </div>
         <div class="module-grid">
           <label><input type="checkbox" id="modTickets" /> Drink Tickets + Wristbands</label>
           <label><input type="checkbox" id="modBuffet" /> Buffet</label>
@@ -158,11 +172,29 @@
           </div>
         </div>
 
-        <div id="commercialQuestions" class="question-block">
-          <h3>Commercial Summary</h3>
+        <div id="aLaCarteQuestions" class="question-block hidden">
+          <h3>À La Carte / Standard Menu</h3>
           <div class="grid">
-            <label>Package price per person<input id="pricePerPerson" type="number" value="0" /></label>
-            <label>Minimum spend<input id="minimumSpend" type="number" value="0" /></label>
+            <label>Payment structure<select id="aLaCartePayment">
+              <option value="Guests pay individually">Guests pay individually</option>
+              <option value="Host pays one bill">Host pays one bill</option>
+              <option value="Open tab with budget cap">Open tab with budget cap</option>
+              <option value="Minimum spend arrangement">Minimum spend arrangement</option>
+            </select></label>
+            <label>Budget cap / hosted tab amount<input id="aLaCarteBudgetCap" type="number" value="0" /></label>
+            <label>Limited event menu required?<select id="aLaCarteLimitedMenu">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select></label>
+            <label class="full-width">À la carte notes<textarea id="aLaCarteNotes" placeholder="e.g. Guests will order from the standard Rodeo menu. Host will cover drinks only. Separate bills required."></textarea></label>
+          </div>
+        </div>
+
+        <div id="commercialQuestions" class="question-block">
+          <h3>Commercial Arrangement</h3>
+          <div class="grid">
+            <label>Package price per person / estimated spend per person<input id="pricePerPerson" type="number" value="0" /></label>
+            <label>Minimum spend / guaranteed spend<input id="minimumSpend" type="number" value="0" /></label>
             <label>Payment terms<input id="paymentTerms" placeholder="e.g. 100% pre-paid by event date" /></label>
             <label>Additional services / charges<textarea id="additionalCharges" placeholder="DJ, voucher, decorations, etc."></textarea></label>
           </div>
